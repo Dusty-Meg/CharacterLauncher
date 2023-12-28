@@ -90,64 +90,77 @@ namespace CharacterLauncher
             {
                 while(true)
                 {
-                    using (LocalDbContext dbContext = new LocalDbContext())
+                    foreach (Process proc in Process.GetProcessesByName("ExeFile"))
                     {
-                        foreach(CharacterFind characterFind in names.Where(x => !x.Found))
-                        {
-                            CharacterInfo user = dbContext.Users
-                            .Where(first =>
-                                first.name == characterFind.CharacterName)
-                            .FirstOrDefault();
+                        string characterName = proc.MainWindowTitle.Replace("EVE - ", "");
 
-                            using (var client = new SshClient("192.168.41.28", 22, "root", "F1reF0x"))
-                            {
-                                client.Connect();
-                                string command = $"/usr/local/bin/docker-compose -f /opt/Seat/docker-compose.yml --project-directory /opt/Seat/ exec -T seat-web su -c 'php artisan esi:job:dispatch \"Seat\\\\Eveapi\\\\Jobs\\\\Location\\\\Character\\\\Online\" --character_id={user.character_id}'";
-                                //string command = "echo test";
-                                using(var cmd = client.CreateCommand(command))
-                                {
-                                    cmd.Execute();
-                                    if (cmd.ExitStatus != 0)
-                                    {
-                                        Console.WriteLine("Command>" + cmd.CommandText);
-                                        Console.WriteLine("Result>" + cmd.Result);
-                                        Console.WriteLine("Error>" + cmd.Error);
-                                        Console.WriteLine("Return Value = {0}", cmd.ExitStatus);
-                                    }
-                                }
-                                client.Disconnect();
-                            }
+                        CharacterFind result = names.FirstOrDefault(x => characterName == x.CharacterName);
+                        if (result != null)
+                        {
+                            result.Found = true;
                         }
                     }
 
-                    Thread.Sleep(20000);
+                    Thread.Sleep(1000);
 
-                    using (LocalDbContext dbContext = new LocalDbContext())
-                    {
-                        foreach(CharacterFind characterFind in names.Where(x => !x.Found))
-                        {
-                            CharacterInfo user = dbContext.Users
-                            .Where(first =>
-                                first.name == characterFind.CharacterName)
-                            .FirstOrDefault();
+                //     using (LocalDbContext dbContext = new LocalDbContext())
+                //     {
+                //         foreach(CharacterFind characterFind in names.Where(x => !x.Found))
+                //         {
+                //             CharacterInfo user = dbContext.Users
+                //             .Where(first =>
+                //                 first.name == characterFind.CharacterName)
+                //             .FirstOrDefault();
 
-                            CharacterOnline online = dbContext.Online
-                            .Where(first =>
-                                first.character_id == user.character_id)
-                            .FirstOrDefault();
+                //             using (var client = new SshClient("192.168.82.233", 22, "matt", "F1reF0x"))
+                //             {
+                //                 client.Connect();
+                //                 string command = $"/usr/local/bin/docker-compose -f /opt/Seat/docker-compose.yml --project-directory /opt/Seat/ exec -T seat-web su -c 'php artisan esi:job:dispatch \"Seat\\\\Eveapi\\\\Jobs\\\\Location\\\\Character\\\\Online\" --character_id={user.character_id}'";
+                //                 //string command = "echo test";
+                //                 using(var cmd = client.CreateCommand(command))
+                //                 {
+                //                     cmd.Execute();
+                //                     if (cmd.ExitStatus != 0)
+                //                     {
+                //                         Console.WriteLine("Command>" + cmd.CommandText);
+                //                         Console.WriteLine("Result>" + cmd.Result);
+                //                         Console.WriteLine("Error>" + cmd.Error);
+                //                         Console.WriteLine("Return Value = {0}", cmd.ExitStatus);
+                //                     }
+                //                 }
+                //                 client.Disconnect();
+                //             }
+                //         }
+                //     }
 
-                            if (online.online || online.last_login > startedTime)
-                            {
-                                CharacterFind result = names.FirstOrDefault(x => characterFind.CharacterName == x.CharacterName);
-                                if (result != null)
-                                {
-                                    result.Found = true;
-                                }
-                            }
-                        }
-                    }
+                //     Thread.Sleep(20000);
 
-                    Thread.Sleep(60000);
+                //     using (LocalDbContext dbContext = new LocalDbContext())
+                //     {
+                //         foreach(CharacterFind characterFind in names.Where(x => !x.Found))
+                //         {
+                //             CharacterInfo user = dbContext.Users
+                //             .Where(first =>
+                //                 first.name == characterFind.CharacterName)
+                //             .FirstOrDefault();
+
+                //             CharacterOnline online = dbContext.Online
+                //             .Where(first =>
+                //                 first.character_id == user.character_id)
+                //             .FirstOrDefault();
+
+                //             if (online.online || online.last_login > startedTime)
+                //             {
+                //                 CharacterFind result = names.FirstOrDefault(x => characterFind.CharacterName == x.CharacterName);
+                //                 if (result != null)
+                //                 {
+                //                     result.Found = true;
+                //                 }
+                //             }
+                //         }
+                //     }
+
+                //     Thread.Sleep(60000);
                 }
             }
             catch (Exception error)
