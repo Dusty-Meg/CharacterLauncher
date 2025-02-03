@@ -9,8 +9,8 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/CharacterLauncher/bin/Debug/net7.0/CharacterLauncher.dll",
-            "args": [ "C:\\Users\\matt\\Documents\\SPFarm1\\ISBoxerEVELauncher.exe", "10", "Jessica Chastoter", "Hannah Assenger", "Matthew Stenierschur", "Alex Beldebub", "Debbie Auffriefaff", "Gavin Cesailly", "Frank Grimey", "LIsa Smackleton", "Sherri Balkenter", "Terry Shackleton", "Seargent Pearson", "Sasha Ediefer", "Barbara Waterman", "Maggie Magpied", "Kent Aireborn", "Shamus Ottoman", "Blizzahah Amperson", "Lindsey Edier", "Francine Podienece", "Frecky Lafisques", "Mo Shassleback", "Natlie Aulx-Gao", "Charlie Aucie", "Kleetus Arnoux", "Jelly Madullier", "SwingS s", "Mike Monsays", "Marial Hammer", "Zanifa Checklers", "Alice Junckerat"],
+            "program": "${workspaceFolder}/CharacterLauncher/bin/Debug/net8.0/CharacterLauncher.dll",
+            "args": [ "C:\\Users\\matt\\Documents\\SPFarm1\\ISBoxerEVELauncher.exe", "10", "C:\\Users\\MatthewMoore\\Downloads\\Characters.json"],
             "cwd": "${workspaceFolder}/CharacterLauncher",
             "console": "internalConsole",
             "stopAtEntry": false

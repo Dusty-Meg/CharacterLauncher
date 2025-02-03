@@ -4,8 +4,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Microsoft.EntityFrameworkCore;
-using Renci.SshNet;
+using System.IO;
+using System.Text.Json;
+using System.Collections.Generic;
 
 namespace CharacterLauncher
 {
@@ -32,9 +33,30 @@ namespace CharacterLauncher
             worker.RunWorkerAsync();
 
             bool run = true;
-            for (int i = 2; i < args.Length; i++)
+
+            if (args[2].Contains("\\"))
             {
-                names.Add(new CharacterFind{CharacterName = args[i]});
+                string filePath = args[2];
+                if (File.Exists(filePath))
+                {
+                    string jsonContent = File.ReadAllText(filePath);
+                    var characters = JsonSerializer.Deserialize<List<CharacterFind>>(jsonContent);
+                    foreach (var character in characters)
+                    {
+                        names.Add(character);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("File not found: " + filePath);
+                }
+            }
+            else
+            {
+                for (int i = 2; i < args.Length; i++)
+                {
+                    names.Add(new CharacterFind{CharacterName = args[i]});
+                }
             }
 
             while(run)
@@ -56,6 +78,23 @@ namespace CharacterLauncher
             {
                 if (!characterFind.Found && characterFind.LastLaunched < DateTime.Now.AddMinutes(-5))
                 {
+                    bool accountOpen = false;
+                    foreach (Process proc in Process.GetProcessesByName("ExeFile"))
+                    {
+                        string characterName = proc.MainWindowTitle.Replace("EVE - ", "");
+
+                        CharacterFind result = names.FirstOrDefault(x => characterName == x.CharacterName);
+                        if (result != null && result.EVEAccountName == characterFind.EVEAccountName)
+                        {
+                            accountOpen = true;
+                        }
+                    }
+
+                    if (accountOpen)
+                    {
+                        continue;
+                    }
+
                     Console.WriteLine($"{characterFind.CharacterName} - Completed: {names.Count(x => x.Found)}/{names.Count()}");
 
                     Process.Start(processString, $"-dx11 -tranquility -eve \"{characterFind.CharacterName}\"");
@@ -102,65 +141,6 @@ namespace CharacterLauncher
                     }
 
                     Thread.Sleep(1000);
-
-                //     using (LocalDbContext dbContext = new LocalDbContext())
-                //     {
-                //         foreach(CharacterFind characterFind in names.Where(x => !x.Found))
-                //         {
-                //             CharacterInfo user = dbContext.Users
-                //             .Where(first =>
-                //                 first.name == characterFind.CharacterName)
-                //             .FirstOrDefault();
-
-                //             using (var client = new SshClient("192.168.82.233", 22, "matt", "F1reF0x"))
-                //             {
-                //                 client.Connect();
-                //                 string command = $"/usr/local/bin/docker-compose -f /opt/Seat/docker-compose.yml --project-directory /opt/Seat/ exec -T seat-web su -c 'php artisan esi:job:dispatch \"Seat\\\\Eveapi\\\\Jobs\\\\Location\\\\Character\\\\Online\" --character_id={user.character_id}'";
-                //                 //string command = "echo test";
-                //                 using(var cmd = client.CreateCommand(command))
-                //                 {
-                //                     cmd.Execute();
-                //                     if (cmd.ExitStatus != 0)
-                //                     {
-                //                         Console.WriteLine("Command>" + cmd.CommandText);
-                //                         Console.WriteLine("Result>" + cmd.Result);
-                //                         Console.WriteLine("Error>" + cmd.Error);
-                //                         Console.WriteLine("Return Value = {0}", cmd.ExitStatus);
-                //                     }
-                //                 }
-                //                 client.Disconnect();
-                //             }
-                //         }
-                //     }
-
-                //     Thread.Sleep(20000);
-
-                //     using (LocalDbContext dbContext = new LocalDbContext())
-                //     {
-                //         foreach(CharacterFind characterFind in names.Where(x => !x.Found))
-                //         {
-                //             CharacterInfo user = dbContext.Users
-                //             .Where(first =>
-                //                 first.name == characterFind.CharacterName)
-                //             .FirstOrDefault();
-
-                //             CharacterOnline online = dbContext.Online
-                //             .Where(first =>
-                //                 first.character_id == user.character_id)
-                //             .FirstOrDefault();
-
-                //             if (online.online || online.last_login > startedTime)
-                //             {
-                //                 CharacterFind result = names.FirstOrDefault(x => characterFind.CharacterName == x.CharacterName);
-                //                 if (result != null)
-                //                 {
-                //                     result.Found = true;
-                //                 }
-                //             }
-                //         }
-                //     }
-
-                //     Thread.Sleep(60000);
                 }
             }
             catch (Exception error)
@@ -179,5 +159,6 @@ namespace CharacterLauncher
         public bool Found { get; set; }
         
         public DateTime LastLaunched { get; set; }
+        public string EVEAccountName { get; set; }
     }
 }
