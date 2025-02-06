@@ -55,7 +55,7 @@ namespace CharacterLauncher
             {
                 for (int i = 2; i < args.Length; i++)
                 {
-                    names.Add(new CharacterFind{CharacterName = args[i]});
+                    names.Add(new CharacterFind{CharacterName = args[i], EVEAccountName = Guid.NewGuid().ToString()});
                 }
             }
 
@@ -76,9 +76,12 @@ namespace CharacterLauncher
         {
             foreach(CharacterFind characterFind in names)
             {
-                if (!characterFind.Found && characterFind.LastLaunched < DateTime.Now.AddMinutes(-5))
+                List<CharacterFind> sameAccounts = names.Where(x => x.EVEAccountName == characterFind.EVEAccountName).ToList();
+
+                if (!characterFind.Found && characterFind.LastLaunched < DateTime.Now.AddMinutes(-5) && sameAccounts.All(x => x.LastLaunched < DateTime.Now.AddSeconds(-20)))
                 {
                     bool accountOpen = false;
+
                     foreach (Process proc in Process.GetProcessesByName("ExeFile"))
                     {
                         string characterName = proc.MainWindowTitle.Replace("EVE - ", "");
